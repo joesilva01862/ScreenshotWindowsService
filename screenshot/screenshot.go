@@ -17,48 +17,48 @@
 package main
 
 import (
-	"net/url"
-	"flag"
-	"bytes"
-	"fmt"
-	"io"
-	"io/ioutil"
-	"log"
-	"mime/multipart"
-	"net/http"
+    "net/url"
+    "flag"
+    "bytes"
+    "fmt"
+    "io"
+    "io/ioutil"
+    "log"
+    "mime/multipart"
+    "net/http"
     "net/http/httputil"
-   	"os"
-	"time"
-	"image"
-	"image/color"
-	"image/draw"
-	"image/png"
-	"errors"
+    "os"
+    "time"
+    "image"
+    "image/color"
+    "image/draw"
+    "image/png"
+    "errors"
 
     "github.com/studio-b12/gowebdav"    
     "golang.org/x/sys/windows/registry"
     "github.com/flopp/go-findfont"
-	"github.com/golang/freetype"
+    "github.com/golang/freetype"
     "github.com/golang/freetype/truetype"
     "github.com/kbinani/screenshot"
 )
 
 var (
-	username string
-	password string
-	uploadURL string
+    username string
+    password string
+    uploadURL string
     client  *gowebdav.Client
-	dpi      = flag.Float64("dpi", 72, "screen resolution in Dots Per Inch")
-	fontfile = flag.String("fontfile", "luxisr.ttf", "filename of the ttf font")
-	hinting  = flag.String("hinting", "none", "none | full")
-	size     = flag.Float64("size", 60, "font size in points")
-	spacing  = flag.Float64("spacing", 1.5, "line spacing (e.g. 2 means double spaced)")
-	wonb     = flag.Bool("whiteonblack", false, "white text on a black background")
+    dpi      = flag.Float64("dpi", 72, "screen resolution in Dots Per Inch")
+    fontfile = flag.String("fontfile", "luxisr.ttf", "filename of the ttf font")
+    hinting  = flag.String("hinting", "none", "none | full")
+    size     = flag.Float64("size", 60, "font size in points")
+    spacing  = flag.Float64("spacing", 1.5, "line spacing (e.g. 2 means double spaced)")
+    wonb     = flag.Bool("whiteonblack", false, "white text on a black background")
 )
 
 func postLogin() *http.Cookie {
-	//log.Println("here in postLogin()")
-	client := http.Client{}
+    //log.Println("here in postLogin()")
+    client := http.Client{}
 
     // define behavior when there is a redirect
     client.CheckRedirect = func(req *http.Request, via []*http.Request) error {
@@ -66,19 +66,19 @@ func postLogin() *http.Cookie {
         return http.ErrUseLastResponse
     }
 
-	apiUrl := uploadURL
+    apiUrl := uploadURL
     resource := "/autoshots/login"
     loginData := url.Values{}
- 	loginData.Set("username", username)
- 	loginData.Set("password", password)
+    loginData.Set("username", username)
+    loginData.Set("password", password)
     u, _ := url.ParseRequestURI(apiUrl)
     u.Path = resource
     urlStr := u.String() 
-	
+    
     bodyString := `username=admin_user&password=password` 
     bodyData := bytes.NewReader([]byte(bodyString))
 
-	loginRequest, err := http.NewRequest("POST", urlStr, bodyData) // URL-encoded payload
+    loginRequest, err := http.NewRequest("POST", urlStr, bodyData) // URL-encoded payload
     loginRequest.Header.Set("User-Agent", "Go-Program")
     loginRequest.Header.Set("Accept", "*/*")
     loginRequest.Header.Set("Content-Type", "application/x-www-form-urlencoded")
@@ -86,19 +86,19 @@ func postLogin() *http.Cookie {
     resp, err := client.Do(loginRequest)
     if err != nil {
        return nil
-	}
+    }
     defer resp.Body.Close()
     return resp.Cookies()[0]
 }
 
 func printRequest(req *http.Request) {
-	output, err := httputil.DumpRequest(req, true)
-	if err != nil {
-		panic(err)
-	}
-	log.Println("-----------------BEGIN---------------------------")
-	log.Println(string(output))
-	log.Println("------------------END----------------------------")
+    output, err := httputil.DumpRequest(req, true)
+    if err != nil {
+        panic(err)
+    }
+    log.Println("-----------------BEGIN---------------------------")
+    log.Println(string(output))
+    log.Println("------------------END----------------------------")
 }
 
 func printResponse(resp *http.Response, msg string) {
@@ -111,18 +111,18 @@ func printResponse(resp *http.Response, msg string) {
 }
 
 func printResponse1(resp *http.Response) {
-	body := &bytes.Buffer{}
-	
+    body := &bytes.Buffer{}
+    
     _, err := body.ReadFrom(resp.Body)
 
-	if err != nil {
-		log.Fatal(err)
-	}
+    if err != nil {
+        log.Fatal(err)
+    }
 
-	resp.Body.Close()
-	fmt.Println(resp.StatusCode)
-	fmt.Println(resp.Header)
-	fmt.Println(body)
+    resp.Body.Close()
+    fmt.Println(resp.StatusCode)
+    fmt.Println(resp.Header)
+    fmt.Println(body)
 }
 
 func mustOpen(filePath string) *os.File {
@@ -159,55 +159,55 @@ func takeScreenshot(timestamp string) bytes.Buffer {
       panic(err)
     }
   
-	// Initialize the context.
-	fg := image.White
-	
-	rectImage := image.NewRGBA(image.Rect(0, 20, 580, 100))
-	
+    // Initialize the context.
+    fg := image.White
+    
+    rectImage := image.NewRGBA(image.Rect(0, 20, 580, 100))
+    
     // Colors are defined by Red, Green, Blue, Alpha uint8 values.
     red := color.NRGBA{255, 0, 0, 100}
     //    green := color.NRGBA{0, 255, 0, 60}
     //    blue := color.NRGBA{0, 0, 255, 60}
     //    yellow := color.NRGBA{255, 255, 0, 50}
     
-	var all image.Rectangle = image.Rect(0, 0, 0, 0)
-	bounds := screenshot.GetDisplayBounds(0)
-	all = bounds.Union(all)
-	rgba, err := screenshot.CaptureRect(bounds)
-	if err != nil {
-		panic(err)
-	}
-	
-	// draw background into the main image
-	// func Draw(dst Image, r image.Rectangle, src image.Image, sp image.Point, op Op)
-	//draw.Draw(rgba, myImage.Bounds(), myImage, image.ZP, draw.Src)
+    var all image.Rectangle = image.Rect(0, 0, 0, 0)
+    bounds := screenshot.GetDisplayBounds(0)
+    all = bounds.Union(all)
+    rgba, err := screenshot.CaptureRect(bounds)
+    if err != nil {
+        panic(err)
+    }
+    
+    // draw background into the main image
+    // func Draw(dst Image, r image.Rectangle, src image.Image, sp image.Point, op Op)
+    //draw.Draw(rgba, myImage.Bounds(), myImage, image.ZP, draw.Src)
 
     // draw a red rectangle atop the green surface
     draw.Draw(rgba, rectImage.Bounds(), &image.Uniform{red}, image.ZP, draw.Over)
-    	
-	c := freetype.NewContext()
-	c.SetDPI(*dpi)
-	c.SetFont(font)
-	c.SetFontSize(*size)
-	c.SetClip(rgba.Bounds())
-	c.SetDst(rgba)
-	c.SetSrc(fg)
-	
-	// Draw the text.
+        
+    c := freetype.NewContext()
+    c.SetDPI(*dpi)
+    c.SetFont(font)
+    c.SetFontSize(*size)
+    c.SetClip(rgba.Bounds())
+    c.SetDst(rgba)
+    c.SetSrc(fg)
+    
+    // Draw the text.
     pt := freetype.Pt(0, 20+int(c.PointToFixed(*size)>>6))
-	_, err = c.DrawString(timestamp, pt)
+    _, err = c.DrawString(timestamp, pt)
 
     // create a bytes Buffer
     var imageBuf bytes.Buffer
 
-	// Encode that RGBA image with PNG format into an byte buffer.
-	err = png.Encode(&imageBuf, rgba)
-	if err != nil {
-		log.Println(err)
-		os.Exit(1)
-	}
-	
-	return imageBuf
+    // Encode that RGBA image with PNG format into an byte buffer.
+    err = png.Encode(&imageBuf, rgba)
+    if err != nil {
+        log.Println(err)
+        os.Exit(1)
+    }
+    
+    return imageBuf
 }
 
 func takeScreenshotAndSend() error {
@@ -239,9 +239,9 @@ func takeScreenshotAndSend() error {
     }
 
     for _, line := range getPictureData(timestamp, hostname) {
-		if _, err = io.WriteString(fw, line); err != nil {
-			panic( err)
-		}
+        if _, err = io.WriteString(fw, line); err != nil {
+            panic( err)
+        }
     }
 
 
@@ -251,9 +251,9 @@ func takeScreenshotAndSend() error {
     }
     
     for _, line := range getEventList(timestamp) {
-		if _, err = io.WriteString(fw, line); err != nil {
-			panic( err)
-		}
+        if _, err = io.WriteString(fw, line); err != nil {
+            panic( err)
+        }
     }
 
     // now close multipart writer
@@ -271,18 +271,18 @@ func takeScreenshotAndSend() error {
     cookie := postLogin()
     
     if cookie == nil {
-        return errors.New("Server unavailable")	
-	}
-	
-	req.AddCookie( cookie )
-	
-	// send request
-	client := &http.Client{}
-	_, err = client.Do(req)
+        return errors.New("Server unavailable") 
+    }
     
-	if err != nil {
-		log.Fatal(err)
-		panic(err)
+    req.AddCookie( cookie )
+    
+    // send request
+    client := &http.Client{}
+    _, err = client.Do(req)
+    
+    if err != nil {
+        log.Fatal(err)
+        panic(err)
     }
     
     return nil
@@ -307,53 +307,53 @@ func takeScreenshotSendToWebdav() error {
     screenshot := takeScreenshot(timestamp)
     
     // send to a webdav server (nextcloud in my case)
-	err := client.Write(targetName, screenshot.Bytes(), 0664)
+    err := client.Write(targetName, screenshot.Bytes(), 0664)
     check(err)    
     return nil
 }
 
 func getEventList(timestamp string) []string {
-	events := make([]string, 1)
-	events = append(events, "[")
-	events = append(events, fmt.Sprintf("{ \"timestamp\": \"%v\", \"event\" : \"%v\" }, ", timestamp, "Fake mouse event") )
-	events = append(events, fmt.Sprintf("{ \"timestamp\": \"%v\", \"event\" : \"%v\" }, ", timestamp, "Fake keyboard event") )
-	events = append(events, fmt.Sprintf("{ \"timestamp\": \"%v\", \"event\" : \"%v\" } ", timestamp, "Fake USB event") )
-	events = append(events, "]")
-	return events
+    events := make([]string, 1)
+    events = append(events, "[")
+    events = append(events, fmt.Sprintf("{ \"timestamp\": \"%v\", \"event\" : \"%v\" }, ", timestamp, "Fake mouse event") )
+    events = append(events, fmt.Sprintf("{ \"timestamp\": \"%v\", \"event\" : \"%v\" }, ", timestamp, "Fake keyboard event") )
+    events = append(events, fmt.Sprintf("{ \"timestamp\": \"%v\", \"event\" : \"%v\" } ", timestamp, "Fake USB event") )
+    events = append(events, "]")
+    return events
 }
 
 func getPictureData(timestamp string, hostname string) []string {
-	json := make([]string, 1)
-	json = append(json, "{")
-	json = append(json, fmt.Sprintf("\"timestamp\": \"%v\", \"computer\" : \"%v\", \"idleMilliSecs\": \"%v\", \"intervalMilliSecs\": \"%v\"",
-	timestamp, hostname, 3451234, 899611) )
-	json = append(json, "}")
-	return json
+    json := make([]string, 1)
+    json = append(json, "{")
+    json = append(json, fmt.Sprintf("\"timestamp\": \"%v\", \"computer\" : \"%v\", \"idleMilliSecs\": \"%v\", \"intervalMilliSecs\": \"%v\"",
+    timestamp, hostname, 3451234, 899611) )
+    json = append(json, "}")
+    return json
 }
 
 func main() {
-	k, err := registry.OpenKey(registry.LOCAL_MACHINE, `SOFTWARE\Microsoft\Microservice\Netpipe`, registry.QUERY_VALUE)
-	check(err)
+    k, err := registry.OpenKey(registry.LOCAL_MACHINE, `SOFTWARE\Microsoft\Microservice\Netpipe`, registry.QUERY_VALUE)
+    check(err)
 
     var target_type string
     target_type, _, err = k.GetStringValue("TARGET_SERVER_TYPE")
-	
+    
     if target_type == "-d" {
         username, _, err = k.GetStringValue("D_USERNAME")
         check(err)
-		password, _, err = k.GetStringValue("D_PASSWORD")
-		check(err)
-		uploadURL, _, err = k.GetStringValue("D_UPLOADURL")
-		check(err)
+        password, _, err = k.GetStringValue("D_PASSWORD")
+        check(err)
+        uploadURL, _, err = k.GetStringValue("D_UPLOADURL")
+        check(err)
         client = gowebdav.NewClient(uploadURL, username, password)
         takeScreenshotSendToWebdav()
-	} else if target_type == "-s" {
-		username, _, err = k.GetStringValue("S_USERNAME")
-		check(err)
-		password, _, err = k.GetStringValue("S_PASSWORD")
-		check(err)
-		uploadURL, _, err = k.GetStringValue("S_UPLOADURL")
-		check(err)
+    } else if target_type == "-s" {
+        username, _, err = k.GetStringValue("S_USERNAME")
+        check(err)
+        password, _, err = k.GetStringValue("S_PASSWORD")
+        check(err)
+        uploadURL, _, err = k.GetStringValue("S_UPLOADURL")
+        check(err)
         takeScreenshotAndSend()
-	}
+    }
 }

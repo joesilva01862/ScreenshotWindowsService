@@ -12,31 +12,31 @@ package main
 
 import (
     "fmt"
-	"sync"
-	"time"
+    "sync"
+    "time"
 )
 
 var (
     ticker = time.NewTicker(15 * time.Second)
-	servicePaused = false
+    servicePaused = false
 )
 
 type server struct {
-	data chan int
-	exit chan struct{}
-	wg   sync.WaitGroup
+    data chan int
+    exit chan struct{}
+    wg   sync.WaitGroup
 }
 
 func (s *server) start() {
-	s.data = make(chan int)
-	s.exit = make(chan struct{})
-	servicePaused = false
+    s.data = make(chan int)
+    s.exit = make(chan struct{})
+    servicePaused = false
 }
 
 func (s *server) stop() error {
-	close(s.exit)
-	servicePaused = true
-	return nil
+    close(s.exit)
+    servicePaused = true
+    return nil
 }
 
 func (s *server) prepareStart() {
@@ -47,17 +47,17 @@ func (s *server) prepareStart() {
 }
 
 func (s *server) startLoop() {
-	for {
-		select {
-			case <-ticker.C:
-			    if !servicePaused {
-				    s.takeShot()
-				} else {
-				    // do nothing
-				}
-				
-		}
-	}
+    for {
+        select {
+            case <-ticker.C:
+                if !servicePaused {
+                    s.takeShot()
+                } else {
+                    // do nothing
+                }
+                
+        }
+    }
 }
 
 func (s *server) takeShot() {
