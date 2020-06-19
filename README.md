@@ -1,6 +1,6 @@
-## StatsAndroidApp
+## Screenshot Windows Service
 
-This is a Windows service written in GO, to continually wake up at predefined interval and invoke another program.
+This is a Windows service written in GO, to continually wake up at predefined intervals and invoke another program.
 This other program is a program, also written in GO, to take a screenshot of your desktop and send it to
 a WebDav server, such as Nextcloud.
 
