@@ -15,11 +15,13 @@ instructions on how to build both.
   Fig 1: The Service panel shows Screenshot Service
 </p>
   
+  
 <p align="center">
-  <img align="center" width="600" height="250" src="https://github.com/joesilva01862/ScreenshotWindowsService/blob/master/RegistryEntries.png">
+  <img align="center" width="600" height="250" src="https://github.com/joesilva01862/ScreenshotWindowsService/blob/master/RegistryEntries.jpg">
   <br>
   Fig 2: Registry variables required to run the service
 </p>
+
 
 <p align="center">
   <img align="center" width="600" height="250" src="https://github.com/joesilva01862/ScreenshotWindowsService/blob/master/Screenshot.jpg">
