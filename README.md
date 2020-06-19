@@ -1,11 +1,11 @@
 ## Screenshot Windows Service
 
 This is a Windows service written in GO, to continually wake up at predefined intervals and invoke another program.
-This other program is a program, also written in GO, to take a screenshot of your desktop and send it to
+This other program, also written in GO, takes a screenshot of your desktop and sends it to
 a WebDav server, such as Nextcloud.
 
 ## How to use it
-Here, you'll find the souces for both the Service and the screenshot program, with install script and 
+Here you'll find the sources for both the Service and the screenshot program, along with install/uninstall scripts and 
 instructions on how to build both.
 
 ## Screenshots
