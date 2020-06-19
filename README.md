@@ -10,7 +10,7 @@ instructions on how to build both.
 
 ## Screenshots
 <p align="center">
-  <img align="center" src="https://github.com/joesilva01862/ScreenshotWindowsService/tree/master/service/pictures/WindowsService.jpg">
+  <img align="center" src="https://github.com/joesilva01862/ScreenshotWindowsService/blob/master/WindowsService.jpg">
   <br>
   Fig 1: The Service panel shows Screenshot Service
 </p>
